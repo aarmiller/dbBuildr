@@ -17,8 +17,8 @@ add_db_directory <- function(project_name, base_path = "/Shared/AML/small_dbs",
                              sources = c("ccae","mdcr","medicaid"), years = 1:20,
                              param_path = "/Shared/AML/params"){
 
-  if(file.exists(paste0(param_path,"small_db_paths.RData"))){
-    load(paste0(param_path,"small_db_paths.RData"))
+  if(file.exists(paste0(param_path,"/small_db_paths.RData"))){
+    load(paste0(param_path,"/small_db_paths.RData"))
   } else {
     small_db_paths <- list()
   }
@@ -29,7 +29,11 @@ add_db_directory <- function(project_name, base_path = "/Shared/AML/small_dbs",
   small_db_paths[[project_name]]$last_build <- Sys.Date()
   small_db_paths[[project_name]]$build_status <- "built_directory"
 
-  dir.create(path = paste0(base_path,project_name))
+
+  dir.create(path = paste0(base_path,"/",project_name))
+  dir.create(path = paste0(base_path,"/",project_name,"/truven"))
+
+  save(small_db_paths, file = paste0(param_path,"/small_db_paths.RData"))
 
   }
 
