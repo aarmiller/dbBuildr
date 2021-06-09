@@ -37,8 +37,27 @@ add_db_directory <- function(project_name, base_path = "/Shared/AML/small_dbs",
 
   }
 
-# Update Build Status
-#
+#' Update Build Status
+#'
+#' Updates the status of the small_db_paths file
+#'
+#' @param project_name a name for the project. This should also correspond to a
+#'  disease group in the codeBuildr package
+#' @param description a description to update the status to
+#' @param param_path the path to the parameter folder
+#'
+#' @export
+update_build_status <- function(project_name, description,
+                                param_path = "/Shared/AML/params"){
+
+  load(paste0(param_path,"/small_db_paths.RData"))
+
+  small_db_paths[[cond_name]]$build_status <- description
+  small_db_paths[[cond_name]]$last_build <- Sys.Date()
+
+  save(small_db_paths, file = paste0(param_path,"/small_db_paths.RData"))
+
+}
 
 
 
