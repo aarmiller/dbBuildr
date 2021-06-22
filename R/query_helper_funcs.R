@@ -152,3 +152,40 @@ get_dx_dates <- function(setting,source,year,dx9_list,dx10_list,con,
                                   con = con,
                                   collect_n = collect_n))
 }
+
+
+#' Get variables from a specified table
+#'
+#' @param table_name the name of the table
+#' @param source the source (ccae or mdcr)
+#' @param year the year to collect from
+#' @param vars the variables to collect
+#' @param db_con a database connection
+#' @param collect_n the number of variables to collect
+#'
+#' @export
+
+get_table_vars <- function(table_name,source,year,vars,db_con,collect_n=10){
+
+  db_tab <- db_con %>%
+    dplyr::tbl(glue::glue("{table_name}_{source}_{year}"))
+
+  get_vars <- db_tab %>% dplyr::tbl_vars()
+
+  if (is.null(vars)){
+    get_vars <- get_vars
+  } else {
+    get_vars <- vars[vars %in% get_vars]
+  }
+
+  if ("enrolid" %in% get_vars){
+    db_tab %>%
+      dplyr::select(get_vars) %>%
+      dplyr::collect(n=collect_n) %>%
+      dplyr::mutate(enrolid=bit64::as.integer64(enrolid))
+  } else {
+    db_tab %>%
+      dplyr::select(get_vars) %>%
+      dplyr::collect(n=collect_n)
+  }
+}

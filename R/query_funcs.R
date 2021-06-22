@@ -6,18 +6,17 @@
 #'
 #' @importFrom rlang .data
 #'
-#' @param setting "inpatient", "outpatient", "rx"
-#' @param source "ccae" or "mdcr" or c("ccae","mdcr")
-#' @param year vector of years to collect. Note: if no argument is provided
-#' all years will be selected
-#' @param dx_list vector of diagnoses to pull visits for
-#' @param con a database connection
-#' @param collect_n number of rows to collect
+#' @param dx_codes_9 icd-9 diagnosis codes to collect
+#' @param dx_codes_10 icd-10 diagnosis codes to collect
+#' @param db_path a string with the path to the databases folder
+#' @param years years of data to collect for
+#' @param cluster_size size of cluster to create for pulling data
+#' @param num_to_collect number of rows to collect
 #'
 #' @return A list containing three tibbles (timemap, outpatient keys, and inpatient keys)
 #'
 #' @export
-pull_dx_dates <- function(dx_codes_9, dx_codes_10, db_path,
+pull_dx_dates <- function(dx_codes_9, dx_codes_10, db_path, years,
                           cluster_size = 20, num_to_collect = 10){
 
   # Setup cluster
@@ -26,12 +25,13 @@ pull_dx_dates <- function(dx_codes_9, dx_codes_10, db_path,
   parallel::clusterEvalQ(cl, library(bit64))
   parallel::clusterEvalQ(cl, library(dbBuildr))
   parallel::clusterExport(cl, "num_to_collect")
-  #clusterExport(cl, "get_dx_dates")
-  #clusterExport(cl, "get_dx9_dates")
-  #clusterExport(cl, "get_dx10_dates")
   parallel::clusterExport(cl, "dx_codes_9")
   parallel::clusterExport(cl, "dx_codes_10")
   parallel::clusterExport(cl, "db_path")
+
+  # define medicaid years to collect
+
+  # ADD THIS.....
 
   ## Get Inpatient Visits -----------------------------
 
@@ -121,5 +121,38 @@ pull_dx_dates <- function(dx_codes_9, dx_codes_10, db_path,
 
   return(list(all_inpatient_visits = all_inpatient_visits,
               all_outpatient_visits = all_outpatient_visits))
+
+}
+
+
+#' Pull tables across multiple years
+#'
+#' This function pulls columns from a specified table
+#'
+#' @param table_name name of table to pull
+#' @param setting "inpatient", "outpatient", "rx"
+#' @param source "ccae" or "mdcr" or c("ccae","mdcr")
+#' @param year vector of years to collect. Note: if no argument is provided
+#' all years will be selected
+#' @param vars vector of variables to collect
+#' @param num_to_collect the number of variables to collect
+pull_tables <- function() {
+
+  # Pull Medicare
+
+  parLapply(cl,years,
+            function(x) {get_table_vars(table_name = ,
+                                        source = "mdcr",
+                                        year = x,
+                                        vars = vars,
+                                        db_con = DBI::dbConnect(RSQLite::SQLite(),
+                                                             paste0(db_path,"truven_",x,".db")),
+                                        collect_n = num_to_collect)})
+
+  # Pull Commercial Claims
+
+  # Pull Medicaid
+
+
 
 }

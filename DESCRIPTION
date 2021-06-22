@@ -13,6 +13,7 @@ Imports:
     bit64,
     DBI,
     dplyr,
+    glue,
     magrittr,
     parallel,
     rlang,
