@@ -27,7 +27,7 @@ add_db_directory <- function(project_name, base_path = "/Shared/AML/small_dbs",
   small_db_paths[[project_name]]$years <- years
   small_db_paths[[project_name]]$base_path <- base_path
   small_db_paths[[project_name]]$last_build <- Sys.Date()
-  small_db_paths[[project_name]]$build_status <- "built_directory"
+  small_db_paths[[project_name]]$build_status <- "Built directory"
 
 
   dir.create(path = paste0(base_path,"/",project_name))
@@ -52,8 +52,8 @@ update_build_status <- function(project_name, description,
 
   load(paste0(param_path,"/small_db_paths.RData"))
 
-  small_db_paths[[cond_name]]$build_status <- description
-  small_db_paths[[cond_name]]$last_build <- Sys.Date()
+  small_db_paths[[project_name]]$build_status <- description
+  small_db_paths[[project_name]]$last_build <- Sys.Date()
 
   save(small_db_paths, file = paste0(param_path,"/small_db_paths.RData"))
 
