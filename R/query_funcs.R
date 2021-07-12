@@ -10,13 +10,14 @@
 #' @param dx_codes_10 icd-10 diagnosis codes to collect
 #' @param db_path a string with the path to the databases folder
 #' @param years years of data to collect for
+#' @param medicaid_years years of medicaid data to collect for
 #' @param cluster_size size of cluster to create for pulling data
 #' @param num_to_collect number of rows to collect
 #'
 #' @return A list containing three tibbles (timemap, outpatient keys, and inpatient keys)
 #'
 #' @export
-pull_dx_dates <- function(dx_codes_9, dx_codes_10, db_path, years,
+pull_dx_dates <- function(dx_codes_9, dx_codes_10, db_path, years, medicaid_years,
                           cluster_size = 20, num_to_collect = 10){
 
   # Setup cluster

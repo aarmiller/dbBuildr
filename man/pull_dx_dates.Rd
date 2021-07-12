@@ -8,23 +8,26 @@ pull_dx_dates(
   dx_codes_9,
   dx_codes_10,
   db_path,
+  years,
+  medicaid_years,
   cluster_size = 20,
   num_to_collect = 10
 )
 }
 \arguments{
-\item{setting}{"inpatient", "outpatient", "rx"}
+\item{dx_codes_9}{icd-9 diagnosis codes to collect}
 
-\item{source}{"ccae" or "mdcr" or c("ccae","mdcr")}
+\item{dx_codes_10}{icd-10 diagnosis codes to collect}
 
-\item{year}{vector of years to collect. Note: if no argument is provided
-all years will be selected}
+\item{db_path}{a string with the path to the databases folder}
 
-\item{dx_list}{vector of diagnoses to pull visits for}
+\item{years}{years of data to collect for}
 
-\item{con}{a database connection}
+\item{medicaid_years}{years of medicaid data to collect for}
 
-\item{collect_n}{number of rows to collect}
+\item{cluster_size}{size of cluster to create for pulling data}
+
+\item{num_to_collect}{number of rows to collect}
 }
 \value{
 A list containing three tibbles (timemap, outpatient keys, and inpatient keys)

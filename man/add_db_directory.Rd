@@ -9,6 +9,7 @@ add_db_directory(
   base_path = "/Shared/AML/small_dbs",
   sources = c("ccae", "mdcr", "medicaid"),
   years = 1:20,
+  medicaid_years = 14:18,
   param_path = "/Shared/AML/params"
 )
 }
@@ -21,6 +22,8 @@ disease group in the codeBuildr package}
 \item{sources}{the sources to pull data from}
 
 \item{years}{the years to pull data for}
+
+\item{medicaid_years}{the years of medicaid data to pull from}
 
 \item{param_path}{the path to the parameter folder}
 }
