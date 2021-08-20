@@ -158,7 +158,7 @@ pull_tables <- function() {
 
 }
 
-#' Pull rx across multiple years
+#' Pull rx encounters across multiple years
 #'
 #' This function pulls columns from a specified table
 #'
@@ -170,6 +170,8 @@ pull_tables <- function() {
 #' @param cluster_size size of cluster to create for pulling data
 #' @param num_to_collect the number of variables to collect
 #' @param db_path path to Truven databases
+#' 
+#' @export
 pull_rx_encounters <- function(years,medicaid_years,ndc_codes,vars = c("enrolid","ndcnum","svcdate"),num_to_collect = 10,
                                cluster_size = 20,db_path = "/Shared/Statepi_Marketscan/databases/Truven/") {
   

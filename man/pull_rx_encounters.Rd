@@ -2,7 +2,7 @@
 % Please edit documentation in R/query_funcs.R
 \name{pull_rx_encounters}
 \alias{pull_rx_encounters}
-\title{Pull rx across multiple years}
+\title{Pull rx encounters across multiple years}
 \usage{
 pull_rx_encounters(
   years,
