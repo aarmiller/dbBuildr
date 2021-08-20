@@ -181,6 +181,7 @@ pull_rx_encounters <- function(years,medicaid_years,ndc_codes,vars = c("enrolid"
   parallel::clusterEvalQ(cl, library(dbBuildr))
   parallel::clusterExport(cl, "get_rx_encounters")
   parallel::clusterExport(cl, "params")
+  parallel::clusterExport(cl, "num_to_collect")
   
   
   # Pull Medicare
