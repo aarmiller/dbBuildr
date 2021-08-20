@@ -189,3 +189,43 @@ get_table_vars <- function(table_name,source,year,vars,db_con,collect_n=10){
       dplyr::collect(n=collect_n)
   }
 }
+
+
+#' Get rx encounters 
+#'
+#' @param source the source (ccae or mdcr)
+#' @param year the year to collect from
+#' @param ndc_codes ndc codes to filter on
+#' @param vars the variables to collect (if NULL all will be collect)
+#' @param db_con a database connection
+#' @param collect_n the number of variables to collect
+#'
+#' @export
+get_rx_encounters <- function(source,year,ndc_codes,vars = NULL,db_con,collect_n=10){
+  
+  db_tab <- db_con %>%
+    dplyr::tbl(glue::glue("rx_core_{source}_{year}"))
+  
+  get_vars <- db_tab %>% dplyr::tbl_vars()
+  
+  if (is.null(vars)){
+    get_vars <- get_vars
+  } else {
+    get_vars <- vars[vars %in% get_vars]
+  }
+  
+  if ("enrolid" %in% get_vars){
+    db_tab %>% 
+      dplyr::filter(ndcnum %in% ndc_codes) %>% 
+      dplyr::select(get_vars) %>%
+      dplyr::collect(n=collect_n) %>%
+      dplyr::mutate(enrolid=bit64::as.integer64(enrolid))
+  } else {
+    db_tab %>% 
+      dplyr::filter(ndcnum %in% ndc_codes) %>% 
+      dplyr::select(get_vars) %>%
+      dplyr::collect(n=collect_n)
+  }
+
+  
+}

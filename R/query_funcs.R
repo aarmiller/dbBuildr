@@ -157,3 +157,61 @@ pull_tables <- function() {
 
 
 }
+
+#' Pull rx across multiple years
+#'
+#' This function pulls columns from a specified table
+#'
+#' @param years vector of years to collect. Note: if no argument is provided
+#' all years will be selected
+#' @param medicaid_years years of medicaid data to collect for
+#' @param ndc_codes ndc codes to pull
+#' @param vars vector of variables to collect
+#' @param cluster_size size of cluster to create for pulling data
+#' @param num_to_collect the number of variables to collect
+#' @param db_path path to Truven databases
+pull_rx_encounters <- function(years,medicaid_years,ndc_codes,vars = c("enrolid","ndcnum","svcdate"),num_to_collect = 10,
+                               cluster_size = 20,db_path = "/Shared/Statepi_Marketscan/databases/Truven/") {
+  
+  cl <- parallel::makeCluster(cluster_size)
+  parallel::clusterEvalQ(cl, library(tidyverse))
+  parallel::clusterEvalQ(cl, library(bit64))
+  parallel::clusterEvalQ(cl, library(dbBuildr))
+  parallel::clusterExport(cl, "get_rx_encounters")
+  parallel::clusterExport(cl, "params")
+  
+  
+  # Pull Medicare
+  
+  rx_mdcr <- parLapply(cl,years,
+                       function(x) {get_rx_encounters(source = "mdcr",
+                                                      year = x,
+                                                      ndc_codes = ndc_codes,
+                                                      vars = vars,
+                                                      db_con = DBI::dbConnect(RSQLite::SQLite(),
+                                                                              paste0(db_path,"truven_",x,".db")),
+                                                      collect_n = num_to_collect)})
+  
+  rx_ccae <- parLapply(cl,years,
+                       function(x) {get_rx_encounters(source = "ccae",
+                                                      year = x,
+                                                      ndc_codes = ndc_codes,
+                                                      vars = vars,
+                                                      db_con = DBI::dbConnect(RSQLite::SQLite(),
+                                                                              paste0(db_path,"truven_",x,".db")),
+                                                      collect_n = num_to_collect)})
+  
+  rx_medicaid <- parLapply(cl,medicaid_years,
+                           function(x) {get_rx_encounters(source = "medicaid",
+                                                          year = x,
+                                                          ndc_codes = ndc_codes,
+                                                          vars = vars,
+                                                          db_con = DBI::dbConnect(RSQLite::SQLite(),
+                                                                                  paste0(db_path,"truven_medicaid_",x,".db")),
+                                                          collect_n = num_to_collect)})
+  
+  return(list(rx_mdcr = rx_mdcr,
+              rx_ccae = rx_ccae,
+              rx_medicaid = rx_medicaid))
+  
+}
