@@ -8,7 +8,7 @@ add_db_directory(
   project_name,
   base_path = "/Shared/AML/small_dbs",
   sources = c("ccae", "mdcr", "medicaid"),
-  years = 1:20,
+  years = 1:21,
   medicaid_years = 14:18,
   param_path = "/Shared/AML/params"
 )

@@ -10,7 +10,7 @@ pull_dx_dates(
   db_path,
   years,
   medicaid_years,
-  cluster_size = 20,
+  cluster_size = 21,
   num_to_collect = 10
 )
 }
