@@ -18,15 +18,7 @@
 #'
 #' @export
 pull_dx_dates <- function(dx_codes_9, dx_codes_10, db_path, years, medicaid_years,
-                          cluster_size = 21, num_to_collect = 10){
-  
-  delay_connect <- function(delay_time,db_path){
-    
-    Sys.sleep(delay_time)
-    
-    DBI::dbConnect(RSQLite::SQLite(),db_path)
-  }
-  
+                          cluster_size = 20, num_to_collect = 10){
 
   # Setup cluster
   cl <- parallel::makeCluster(cluster_size)
@@ -37,9 +29,10 @@ pull_dx_dates <- function(dx_codes_9, dx_codes_10, db_path, years, medicaid_year
   parallel::clusterExport(cl, "dx_codes_9")
   parallel::clusterExport(cl, "dx_codes_10")
   parallel::clusterExport(cl, "db_path")
-  parallel::clusterExport(cl, "delay_connect")
 
   # define medicaid years to collect
+
+  # ADD THIS.....
 
   ## Get Inpatient Visits -----------------------------
 
@@ -49,8 +42,8 @@ pull_dx_dates <- function(dx_codes_9, dx_codes_10, db_path, years, medicaid_year
                                                           year = x,
                                                           dx9_list = dx_codes_9,
                                                           dx10_list = dx_codes_10,
-                                                          con = delay_connect(as.integer(x)*2,
-                                                                              paste0("db_path","truven_",x,".db")),
+                                                          con = DBI::dbConnect(RSQLite::SQLite(),
+                                                                               paste0(db_path,"truven_",x,".db")),
                                                           collect_n = num_to_collect)})
 
   res_inpatient_m <-  parLapply(cl,years,
@@ -59,8 +52,8 @@ pull_dx_dates <- function(dx_codes_9, dx_codes_10, db_path, years, medicaid_year
                                                           year = x,
                                                           dx9_list = dx_codes_9,
                                                           dx10_list = dx_codes_10,
-                                                          con = delay_connect(as.integer(x)*2,
-                                                                              paste0("db_path","truven_",x,".db")),
+                                                          con = DBI::dbConnect(RSQLite::SQLite(),
+                                                                               paste0(db_path,"truven_",x,".db")),
                                                           collect_n = num_to_collect)})
 
   res_inpatient_medicaid <-  parLapply(cl,medicaid_years,
@@ -69,8 +62,8 @@ pull_dx_dates <- function(dx_codes_9, dx_codes_10, db_path, years, medicaid_year
                                                                  year = x,
                                                                  dx9_list = dx_codes_9,
                                                                  dx10_list = dx_codes_10,
-                                                                 con = delay_connect(as.integer(x)*2,
-                                                                                     paste0("db_path","truven_medicaid_",x,".db")),
+                                                                 con = DBI::dbConnect(RSQLite::SQLite(),
+                                                                                      paste0(db_path,"truven_medicaid_",x,".db")),
                                                                  collect_n = num_to_collect)})
 
 
@@ -93,8 +86,8 @@ pull_dx_dates <- function(dx_codes_9, dx_codes_10, db_path, years, medicaid_year
                                                            year = x,
                                                            dx9_list = dx_codes_9,
                                                            dx10_list = dx_codes_10,
-                                                           con = delay_connect(as.integer(x)*2,
-                                                                               paste0("db_path","truven_",x,".db")),
+                                                           con = DBI::dbConnect(RSQLite::SQLite(),
+                                                                                paste0(db_path,"truven_",x,".db")),
                                                            collect_n = num_to_collect)})
 
   res_outpatient_m <-  parLapply(cl,years,
@@ -103,8 +96,8 @@ pull_dx_dates <- function(dx_codes_9, dx_codes_10, db_path, years, medicaid_year
                                                            year = x,
                                                            dx9_list = dx_codes_9,
                                                            dx10_list = dx_codes_10,
-                                                           con = delay_connect(as.integer(x)*2,
-                                                                               paste0("db_path","truven_",x,".db")),
+                                                           con = DBI::dbConnect(RSQLite::SQLite(),
+                                                                                paste0(db_path,"truven_",x,".db")),
                                                            collect_n = num_to_collect)})
 
   res_outpatient_medicaid <-  parLapply(cl,medicaid_years,
@@ -113,8 +106,8 @@ pull_dx_dates <- function(dx_codes_9, dx_codes_10, db_path, years, medicaid_year
                                                                   year = x,
                                                                   dx9_list = dx_codes_9,
                                                                   dx10_list = dx_codes_10,
-                                                                  con = delay_connect(as.integer(x)*2,
-                                                                                      paste0("db_path","truven_medicaid_",x,".db")),
+                                                                  con = DBI::dbConnect(RSQLite::SQLite(),
+                                                                                       paste0(db_path,"truven_medicaid_",x,".db")),
                                                                   collect_n = num_to_collect)})
 
   all_outpatient_visits <- rbind(do.call("rbind", res_outpatient_m) %>%
