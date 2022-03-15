@@ -18,7 +18,7 @@
 #'
 #' @export
 pull_dx_dates <- function(dx_codes_9, dx_codes_10, db_path, years, medicaid_years,
-                          cluster_size = 20, num_to_collect = 10){
+                          cluster_size = 21, num_to_collect = 10){
 
   # Setup cluster
   cl <- parallel::makeCluster(cluster_size)

@@ -151,6 +151,8 @@ get_dx_dates <- function(setting,source,year,dx9_list,dx10_list,con,
                                   dx_list = dx10_list,
                                   con = con,
                                   collect_n = collect_n))
+  
+  DBI::dbDisconnect(con)
 }
 
 
