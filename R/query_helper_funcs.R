@@ -139,20 +139,22 @@ get_dx10_dates <- function(setting,source,year,dx_list,con,collect_n=10){
 get_dx_dates <- function(setting,source,year,dx9_list,dx10_list,con,
                          collect_n=10){
 
-  dplyr::bind_rows(get_dx9_dates(setting = setting,
-                                 source = source,
-                                 year = year,
-                                 dx_list = dx9_list,
-                                 con = con,
-                                 collect_n = collect_n),
-                   get_dx10_dates(setting = setting,
-                                  source = source,
-                                  year = year,
-                                  dx_list = dx10_list,
-                                  con = con,
-                                  collect_n = collect_n))
+  out <- dplyr::bind_rows(get_dx9_dates(setting = setting,
+                                        source = source,
+                                        year = year,
+                                        dx_list = dx9_list,
+                                        con = con,
+                                        collect_n = collect_n),
+                          get_dx10_dates(setting = setting,
+                                         source = source,
+                                         year = year,
+                                         dx_list = dx10_list,
+                                         con = con,
+                                         collect_n = collect_n))
   
   DBI::dbDisconnect(con)
+  
+  return(out)
 }
 
 
