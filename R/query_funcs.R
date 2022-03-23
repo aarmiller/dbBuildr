@@ -17,7 +17,7 @@
 #' @return A list containing three tibbles (timemap, outpatient keys, and inpatient keys)
 #'
 #' @export
-pull_dx_dates <- function(dx_codes_9, dx_codes_10, db_path, years, medicaid_years,
+pull_dx_dates <- function(dx_codes_9, dx_codes_10, db_path, years, medicaid_years=NULL,
                           cluster_size = 21, num_to_collect = 10){
 
   # Setup cluster
@@ -55,16 +55,20 @@ pull_dx_dates <- function(dx_codes_9, dx_codes_10, db_path, years, medicaid_year
                                                           con = DBI::dbConnect(RSQLite::SQLite(),
                                                                                paste0(db_path,"truven_",x,".db")),
                                                           collect_n = num_to_collect)})
-
-  res_inpatient_medicaid <-  parLapply(cl,medicaid_years,
-                                       function(x) {get_dx_dates(setting = "inpatient",
-                                                                 source = "medicaid",
-                                                                 year = x,
-                                                                 dx9_list = dx_codes_9,
-                                                                 dx10_list = dx_codes_10,
-                                                                 con = DBI::dbConnect(RSQLite::SQLite(),
-                                                                                      paste0(db_path,"truven_medicaid_",x,".db")),
-                                                                 collect_n = num_to_collect)})
+  
+  if (!is.null(medicaid_years)){
+    res_inpatient_medicaid <-  parLapply(cl,medicaid_years,
+                                         function(x) {get_dx_dates(setting = "inpatient",
+                                                                   source = "medicaid",
+                                                                   year = x,
+                                                                   dx9_list = dx_codes_9,
+                                                                   dx10_list = dx_codes_10,
+                                                                   con = DBI::dbConnect(RSQLite::SQLite(),
+                                                                                        paste0(db_path,"truven_medicaid_",x,".db")),
+                                                                   collect_n = num_to_collect)}) 
+  } else {
+    res_inpatient_medicaid <- tibble()
+  }
 
 
   #### Combine Inpatient
@@ -99,16 +103,22 @@ pull_dx_dates <- function(dx_codes_9, dx_codes_10, db_path, years, medicaid_year
                                                            con = DBI::dbConnect(RSQLite::SQLite(),
                                                                                 paste0(db_path,"truven_",x,".db")),
                                                            collect_n = num_to_collect)})
-
-  res_outpatient_medicaid <-  parLapply(cl,medicaid_years,
-                                        function(x) {get_dx_dates(setting = "outpatient",
-                                                                  source = "medicaid",
-                                                                  year = x,
-                                                                  dx9_list = dx_codes_9,
-                                                                  dx10_list = dx_codes_10,
-                                                                  con = DBI::dbConnect(RSQLite::SQLite(),
-                                                                                       paste0(db_path,"truven_medicaid_",x,".db")),
-                                                                  collect_n = num_to_collect)})
+  
+  if (!is.null(medicaid_years)){
+    
+    res_outpatient_medicaid <-  parLapply(cl,medicaid_years,
+                                          function(x) {get_dx_dates(setting = "outpatient",
+                                                                    source = "medicaid",
+                                                                    year = x,
+                                                                    dx9_list = dx_codes_9,
+                                                                    dx10_list = dx_codes_10,
+                                                                    con = DBI::dbConnect(RSQLite::SQLite(),
+                                                                                         paste0(db_path,"truven_medicaid_",x,".db")),
+                                                                    collect_n = num_to_collect)})
+  } else {
+    res_outpatient_medicaid <- tibble()
+  }
+  
 
   all_outpatient_visits <- rbind(do.call("rbind", res_outpatient_m) %>%
                                    mutate(source=0L),
