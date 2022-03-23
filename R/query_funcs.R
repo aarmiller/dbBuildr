@@ -45,6 +45,10 @@ pull_dx_dates <- function(dx_codes_9, dx_codes_10, db_path, years, medicaid_year
                                                           con = DBI::dbConnect(RSQLite::SQLite(),
                                                                                paste0(db_path,"truven_",x,".db")),
                                                           collect_n = num_to_collect)})
+  
+  res_inpatient_c <- do.call("rbind", res_inpatient_c) %>%
+    mutate(source=1L)
+  
 
   res_inpatient_m <-  parLapply(cl,years,
                                 function(x) {get_dx_dates(setting = "inpatient",
@@ -56,6 +60,10 @@ pull_dx_dates <- function(dx_codes_9, dx_codes_10, db_path, years, medicaid_year
                                                                                paste0(db_path,"truven_",x,".db")),
                                                           collect_n = num_to_collect)})
   
+  res_inpatient_m <- do.call("rbind", res_inpatient_m) %>%
+    mutate(source=0L)
+  
+  
   if (!is.null(medicaid_years)){
     res_inpatient_medicaid <-  parLapply(cl,medicaid_years,
                                          function(x) {get_dx_dates(setting = "inpatient",
@@ -66,6 +74,10 @@ pull_dx_dates <- function(dx_codes_9, dx_codes_10, db_path, years, medicaid_year
                                                                    con = DBI::dbConnect(RSQLite::SQLite(),
                                                                                         paste0(db_path,"truven_medicaid_",x,".db")),
                                                                    collect_n = num_to_collect)}) 
+    
+    res_inpatient_medicaid <- do.call("rbind", res_inpatient_medicaid) %>%
+      mutate(source=2L)
+    
   } else {
     res_inpatient_medicaid <- tibble()
   }
@@ -73,12 +85,9 @@ pull_dx_dates <- function(dx_codes_9, dx_codes_10, db_path, years, medicaid_year
 
   #### Combine Inpatient
 
-  all_inpatient_visits <- rbind(do.call("rbind", res_inpatient_m) %>%
-                                  mutate(source=0L),
-                                do.call("rbind", res_inpatient_c) %>%
-                                  mutate(source=1L),
-                                do.call("rbind", res_inpatient_medicaid) %>%
-                                  mutate(source=2L))
+  all_inpatient_visits <- rbind(res_inpatient_m,
+                                res_inpatient_c,
+                                res_inpatient_medicaid)
 
   rm(res_inpatient_c, res_inpatient_m, res_inpatient_medicaid)
 
@@ -93,6 +102,8 @@ pull_dx_dates <- function(dx_codes_9, dx_codes_10, db_path, years, medicaid_year
                                                            con = DBI::dbConnect(RSQLite::SQLite(),
                                                                                 paste0(db_path,"truven_",x,".db")),
                                                            collect_n = num_to_collect)})
+  res_outpatient_c <- do.call("rbind", res_outpatient_c) %>%
+    mutate(source=1L)
 
   res_outpatient_m <-  parLapply(cl,years,
                                  function(x) {get_dx_dates(setting = "outpatient",
@@ -103,6 +114,9 @@ pull_dx_dates <- function(dx_codes_9, dx_codes_10, db_path, years, medicaid_year
                                                            con = DBI::dbConnect(RSQLite::SQLite(),
                                                                                 paste0(db_path,"truven_",x,".db")),
                                                            collect_n = num_to_collect)})
+  
+  res_outpatient_m <- do.call("rbind", res_outpatient_m) %>%
+    mutate(source=0L)
   
   if (!is.null(medicaid_years)){
     
@@ -115,17 +129,18 @@ pull_dx_dates <- function(dx_codes_9, dx_codes_10, db_path, years, medicaid_year
                                                                     con = DBI::dbConnect(RSQLite::SQLite(),
                                                                                          paste0(db_path,"truven_medicaid_",x,".db")),
                                                                     collect_n = num_to_collect)})
+    
+    res_outpatient_medicaid <- do.call("rbind", res_outpatient_medicaid) %>%
+      mutate(source=2L)
+    
   } else {
     res_outpatient_medicaid <- tibble()
   }
   
 
-  all_outpatient_visits <- rbind(do.call("rbind", res_outpatient_m) %>%
-                                   mutate(source=0L),
-                                 do.call("rbind", res_outpatient_c) %>%
-                                   mutate(source=1L),
-                                 do.call("rbind", res_outpatient_medicaid) %>%
-                                   mutate(source=2L))
+  all_outpatient_visits <- rbind(res_outpatient_m,
+                                 res_outpatient_c,
+                                 res_outpatient_medicaid)
 
 
   rm(res_outpatient_c, res_outpatient_m, res_outpatient_medicaid)
