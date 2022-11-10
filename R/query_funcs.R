@@ -25,10 +25,10 @@ pull_dx_dates <- function(dx_codes_9, dx_codes_10, db_path, years, medicaid_year
   parallel::clusterEvalQ(cl, library(tidyverse))
   parallel::clusterEvalQ(cl, library(bit64))
   parallel::clusterEvalQ(cl, library(dbBuildr))
-  parallel::clusterExport(cl, "num_to_collect")
-  parallel::clusterExport(cl, "dx_codes_9")
-  parallel::clusterExport(cl, "dx_codes_10")
-  parallel::clusterExport(cl, "db_path")
+  parallel::clusterExport(cl,list("num_to_collect",
+                                  "dx_codes_9",
+                                  "dx_codes_10",
+                                  "db_path"), envir = environment())
 
   # define medicaid years to collect
 
@@ -243,3 +243,6 @@ pull_rx_encounters <- function(years,medicaid_years,ndc_codes,vars = c("enrolid"
               rx_medicaid = rx_medicaid))
   
 }
+
+
+# Pull Procedure Encounters
