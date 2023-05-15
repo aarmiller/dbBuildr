@@ -138,19 +138,31 @@ get_dx10_dates <- function(setting,source,year,dx_list,con,collect_n=10){
 #' @export
 get_dx_dates <- function(setting,source,year,dx9_list,dx10_list,con,
                          collect_n=10){
-
-  out <- dplyr::bind_rows(get_dx9_dates(setting = setting,
-                                        source = source,
-                                        year = year,
-                                        dx_list = dx9_list,
-                                        con = con,
-                                        collect_n = collect_n),
-                          get_dx10_dates(setting = setting,
-                                         source = source,
-                                         year = year,
-                                         dx_list = dx10_list,
-                                         con = con,
-                                         collect_n = collect_n))
+  
+  if (setting=="facility"){
+    
+    out <- dplyr::tbl(con,paste0("facility_dx_",source,"_",year)) %>% 
+      dplyr::filter((dx %in% dx9_list & dx_ver==9) |
+                      (dx %in% dx10_list & dx_ver==0)) %>% 
+      dplyr::collect(n=collect_n)  %>%
+      dplyr::mutate(enrolid = bit64::as.integer64(enrolid))
+    
+  } else {
+    
+    out <- dplyr::bind_rows(get_dx9_dates(setting = setting,
+                                          source = source,
+                                          year = year,
+                                          dx_list = dx9_list,
+                                          con = con,
+                                          collect_n = collect_n),
+                            get_dx10_dates(setting = setting,
+                                           source = source,
+                                           year = year,
+                                           dx_list = dx10_list,
+                                           con = con,
+                                           collect_n = collect_n))
+     
+  }
   
   DBI::dbDisconnect(con)
   

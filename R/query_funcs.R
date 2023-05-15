@@ -144,9 +144,85 @@ pull_dx_dates <- function(dx_codes_9, dx_codes_10, db_path, years, medicaid_year
 
 
   rm(res_outpatient_c, res_outpatient_m, res_outpatient_medicaid)
+  
+  
+  ## Get facility headers ---------------------------------------
+  
+  # function to add in dx_poa if missing
+  fix_poa <- function(data){
+    if (!("dx_poa" %in% names(data))) {
+      dplyr::mutate(data,dx_poa=NA)
+    } else {
+      data
+    }
+  }
+  
+  # remove year 01 from years
+  fac_years <- years[!(years=="01")]
+  
+  res_facility_c <-  parallel::parLapply(cl,fac_years,
+                                function(x) {get_dx_dates(setting = "facility",
+                                                          source = "ccae",
+                                                          year = x,
+                                                          dx9_list = dx_codes_9,
+                                                          dx10_list = dx_codes_10,
+                                                          con = DBI::dbConnect(RSQLite::SQLite(),
+                                                                               paste0(db_path,"facilities_dbs/facilities_",x,".db")),
+                                                          collect_n = num_to_collect)})
+  
+  res_facility_c <- map(res_facility_c,fix_poa) %>% 
+    do.call("rbind",.) %>%
+    mutate(source=1L)
+  
+  
+  res_facility_m <-  parallel::parLapply(cl,fac_years,
+                                         function(x) {get_dx_dates(setting = "facility",
+                                                                   source = "mdcr",
+                                                                   year = x,
+                                                                   dx9_list = dx_codes_9,
+                                                                   dx10_list = dx_codes_10,
+                                                                   con = DBI::dbConnect(RSQLite::SQLite(),
+                                                                                        paste0(db_path,"facilities_dbs/facilities_",x,".db")),
+                                                                   collect_n = num_to_collect)})
+  
+  res_facility_m <- map(res_facility_m,fix_poa) %>% 
+    do.call("rbind",.) %>%
+    mutate(source=0L)
+  
+  
+  if (!is.null(medicaid_years)){
+    res_facility_medicaid <-  parLapply(cl,medicaid_years,
+                                         function(x) {get_dx_dates(setting = "facility",
+                                                                   source = "medicaid",
+                                                                   year = x,
+                                                                   dx9_list = dx_codes_9,
+                                                                   dx10_list = dx_codes_10,
+                                                                   con = DBI::dbConnect(RSQLite::SQLite(),
+                                                                                        paste0(db_path,"facilities_dbs/facilities_medicaid_",x,".db")),
+                                                                   collect_n = num_to_collect)}) 
+    
+    
+    res_facility_medicaid <- map(res_facility_medicaid,fix_poa) %>% 
+      do.call("rbind",.) %>%
+      mutate(source=2L)
+    
+  } else {
+    res_facility_medicaid <- tibble()
+  }
+  
+  
+  #### Combine Inpatient
+  
+  all_facility_visits <- rbind(res_facility_m,
+                               res_facility_c,
+                               res_facility_medicaid)
+  
+  rm(res_facility_c, res_facility_m, res_facility_medicaid)
+  parallel::stopCluster(cl)
 
   return(list(all_inpatient_visits = all_inpatient_visits,
-              all_outpatient_visits = all_outpatient_visits))
+              all_outpatient_visits = all_outpatient_visits,
+              all_facility_visits = all_facility_visits))
 
 }
 
