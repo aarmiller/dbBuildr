@@ -141,9 +141,14 @@ get_dx_dates <- function(setting,source,year,dx9_list,dx10_list,con,
   
   if (setting=="facility"){
     
-    out <- dplyr::tbl(con,paste0("facility_dx_",source,"_",year)) %>% 
+    tmp1 <- dplyr::tbl(con,paste0("facility_dx_",source,"_",year)) %>% 
       dplyr::filter((dx %in% dx9_list & dx_ver==9) |
-                      (dx %in% dx10_list & dx_ver==0)) %>% 
+                      (dx %in% dx10_list & dx_ver==0))
+    
+    tmp2 <- dplyr::tbl(con,paste0("facility_core_",source,"_",year)) %>% 
+      dplyr::select(fachdid,caseid,tsvcdat)
+    
+    out <- dplyr::inner_join(tmp1,tmp2,by = "fachdid") %>% 
       dplyr::collect(n=collect_n)  %>%
       dplyr::mutate(enrolid = bit64::as.integer64(enrolid))
     
