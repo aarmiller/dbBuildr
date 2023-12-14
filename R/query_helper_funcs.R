@@ -152,6 +152,8 @@ get_dx_dates <- function(setting,source,year,dx9_list,dx10_list,con,
       dplyr::collect(n=collect_n)  %>%
       dplyr::mutate(enrolid = bit64::as.integer64(enrolid))
     
+    out <- out %>% mutate(dx_ver = ifelse(dx_ver==0,10L,dx_ver))
+    
   } else {
     
     out <- dplyr::bind_rows(get_dx9_dates(setting = setting,
@@ -159,13 +161,15 @@ get_dx_dates <- function(setting,source,year,dx9_list,dx10_list,con,
                                           year = year,
                                           dx_list = dx9_list,
                                           con = con,
-                                          collect_n = collect_n),
+                                          collect_n = collect_n) %>% 
+                              mutate(dx_ver = 9L),
                             get_dx10_dates(setting = setting,
                                            source = source,
                                            year = year,
                                            dx_list = dx10_list,
                                            con = con,
-                                           collect_n = collect_n))
+                                           collect_n = collect_n) %>% 
+                              mutate(dx_ver = 10L))
      
   }
   
